@@ -10,6 +10,7 @@ projectType=""
 projectDirectory=""
 projectPhpVersion=""
 projectEnvironment=""
+projectPort=""
 
 if [ $# -ge 1 ]; then
   projectName="$1"
@@ -29,10 +30,13 @@ fi
 if [ $# -ge 6 ]; then
   projectEnvironment="$6"
 fi
+if [ $# -ge 7 ]; then
+  projectPort="$7"
+fi
 
 printWelcome() {
   echo "******* Bienvenue sur l'assistance de nouveau projet ***********"
-  echo -e "\n\n"
+  echo -e "\n\n"
 }
 
 printTab() {
@@ -66,9 +70,23 @@ readProjectStructure() {
   echo -e "\nChoisir le type de projet"
   printTab "${projectTypes[@]}"
   if [ -z "$projectType" ]; then
-    read -p "Choix : " projectType
+    read -p "Choix : " choix
+    
+    # Conversion du choix numérique en type de projet
+    if [ "$choix" = "1" ]; then
+      projectType="Laravel"
+    elif [ "$choix" = "2" ]; then
+      projectType="React"
+    elif [ "$choix" = "3" ]; then
+      projectType="Vue"
+    else
+      echo "Choix non valide. Veuillez sélectionner un numéro entre 1 et 3."
+      projectType=""
+      return
+    fi
   else
     echo "Type du projet (default): $projectType"
+    # Si projectType est un nombre, conversion en nom de type
     if [ "$projectType" = "1" ]; then
       projectType="Laravel"
     elif [ "$projectType" = "2" ]; then
@@ -86,16 +104,33 @@ readProjectStructure() {
 
   if [ -z "$projectEnvironment" ]; then
     read -p "Environnement (dev, prod) : " projectEnvironment
-    if [ "$projectEnvironment" != "dev" ] && [ "$projectEnvironment" != "prod" ]; then
+    while [ "$projectEnvironment" != "dev" ] && [ "$projectEnvironment" != "prod" ]; do
       echo "Environnement non reconnu. Veuillez choisir entre dev ou prod."
       read -p "Environnement (dev, prod) : " projectEnvironment
-    fi
+    done
   else
     echo "Environnement (default): $projectEnvironment"
   fi
 
-   if [[ ( "$projectType" == "React" || "$projectType" == "Vue" ) && -z "$projectEnvironment" ]]; then 
-    # Your commands here
+  # Gestion du port pour les projets React/Vue en dev
+  if [[ ( "$projectType" == "React" || "$projectType" == "Vue" ) && "$projectEnvironment" == "dev" ]]; then 
+    if [ -z "$projectPort" ]; then
+      read -p "Port : " projectPort
+    else
+      echo "Port (default): $projectPort"
+    fi
+  fi
+
+  # Validation des champs obligatoires
+  if [ -z "$projectName" ] || [ -z "$projectUrl" ] || [ -z "$projectDirectory" ] || [ -z "$projectType" ] || [ -z "$projectEnvironment" ]; then
+    echo "Veuillez remplir tous les champs obligatoires."
+    readProjectStructure
+  fi
+  
+  # Validation supplémentaire pour les projets qui nécessitent un port
+  if [[ ( "$projectType" == "React" || "$projectType" == "Vue" ) && "$projectEnvironment" == "dev" && -z "$projectPort" ]]; then
+    echo "Le port est obligatoire pour les projets React/Vue en environnement de développement."
+    readProjectStructure
   fi
 }
 
@@ -107,6 +142,10 @@ createVirtualHostNginx() {
   local projectUrl="$1"
   local projectType="$2"
   local projectPhpVersion="$3"
+  local projectEnvironment="$4"
+  local projectPort="$5"
+
+  echo "Création du virtual host pour $projectUrl ($projectType)"
 
   configFile="/etc/nginx/sites-available/$projectUrl.conf"
 
@@ -147,7 +186,26 @@ EOF
     ;;
 
   React | Vue)
-    cat <<EOF | sudo tee "$configFile"
+    if [ "$projectEnvironment" = "dev" ] && [ -n "$projectPort" ]; then
+      # Configuration pour l'environnement de développement avec proxy pass
+      cat <<EOF | sudo tee "$configFile"
+server {
+    listen 80;
+    server_name $projectUrl;
+    
+    location / {
+        proxy_pass http://localhost:$projectPort;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOF
+    else
+      # Configuration pour l'environnement de production
+      cat <<EOF | sudo tee "$configFile"
 server {
     listen 80;
     server_name $projectUrl;
@@ -160,6 +218,7 @@ server {
     }
 }
 EOF
+    fi
     ;;
 
   *)
@@ -179,7 +238,7 @@ EOF
 
 printWelcome
 readProjectStructure
-# createVirtualHostNginx "$projectUrl" "$projectType" "$projectPhpVersion"
-# createVirtualUrl
+createVirtualHostNginx "$projectUrl" "$projectType" "$projectPhpVersion" "$projectEnvironment" "$projectPort"
+createVirtualUrl
 
 echo -e " ------- Terminé ------ "
