@@ -5,6 +5,8 @@
 echo "=== Laravel Project Creator ==="
 echo ""
 
+# --- QUESTIONS SECTION ---
+
 # Ask for project location
 read -p "Enter the project directory path (e.g., /var/www/html/): " project_path
 if [[ -z "$project_path" ]]; then
@@ -32,6 +34,45 @@ if [[ "$version_option" == "2" ]]; then
     read -p "Enter Laravel version (e.g., 10.*, 9.*, 8.*): " laravel_version
 fi
 
+# Ask for starter kit preference
+echo -e "\nWhich Laravel starter kit would you like to use?"
+echo "1) None (default Laravel)"
+echo "2) Laravel Breeze (lightweight authentication)"
+echo "3) Laravel Jetstream (robust authentication & teams)"
+read -p "Select an option [1-3]: " starter_kit
+
+# Laravel Breeze options
+breeze_option=""
+if [[ "$starter_kit" == "2" ]]; then
+    echo -e "\nSelect Laravel Breeze stack:"
+    echo "1) Blade with Alpine.js"
+    echo "2) Livewire with Alpine.js"
+    echo "3) Inertia with Vue"
+    echo "4) Inertia with React"
+    echo "5) API only"
+    read -p "Select an option [1-5]: " breeze_option
+fi
+
+# Laravel Jetstream options
+jetstream_option=""
+teams_option=""
+if [[ "$starter_kit" == "3" ]]; then
+    echo -e "\nSelect Laravel Jetstream stack:"
+    echo "1) Livewire (with Blade)"
+    echo "2) Inertia.js (with Vue)"
+    read -p "Select an option [1-2]: " jetstream_option
+    
+    # Ask for teams support
+    echo -e "\nDo you want to enable teams support?"
+    echo "1) No"
+    echo "2) Yes"
+    read -p "Select an option [1-2]: " teams_option
+fi
+
+# --- INSTALLATION SECTION ---
+
+echo -e "\n--- Starting installation process ---"
+
 # Create the Laravel project
 echo -e "\nCreating your Laravel project..."
 cd "$project_path" || { echo "Failed to navigate to $project_path"; exit 1; }
@@ -45,23 +86,8 @@ fi
 # Navigate into the project directory
 cd "$project_name" || { echo "Failed to navigate to $project_name"; exit 1; }
 
-# Ask for starter kit preference
-echo -e "\nWhich Laravel starter kit would you like to use?"
-echo "1) None (default Laravel)"
-echo "2) Laravel Breeze (lightweight authentication)"
-echo "3) Laravel Jetstream (robust authentication & teams)"
-read -p "Select an option [1-3]: " starter_kit
-
+# Install selected starter kit
 if [[ "$starter_kit" == "2" ]]; then
-    # Laravel Breeze options
-    echo -e "\nSelect Laravel Breeze stack:"
-    echo "1) Blade with Alpine.js"
-    echo "2) Livewire with Alpine.js"
-    echo "3) Inertia with Vue"
-    echo "4) Inertia with React"
-    echo "5) API only"
-    read -p "Select an option [1-5]: " breeze_option
-    
     echo "Installing Laravel Breeze..."
     composer require laravel/breeze --dev
     
@@ -83,18 +109,6 @@ if [[ "$starter_kit" == "2" ]]; then
     echo "Laravel Breeze installed successfully!"
     
 elif [[ "$starter_kit" == "3" ]]; then
-    # Laravel Jetstream options
-    echo -e "\nSelect Laravel Jetstream stack:"
-    echo "1) Livewire (with Blade)"
-    echo "2) Inertia.js (with Vue)"
-    read -p "Select an option [1-2]: " jetstream_option
-    
-    # Ask for teams support
-    echo -e "\nDo you want to enable teams support?"
-    echo "1) No"
-    echo "2) Yes"
-    read -p "Select an option [1-2]: " teams_option
-    
     teams_flag=""
     if [[ "$teams_option" == "2" ]]; then
         teams_flag="--teams"
