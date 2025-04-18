@@ -372,9 +372,9 @@ echo -e "${BLUE}========================================${NC}"
 echo
 
 # Check for root privileges for most operations
-if [ "$1" != "--no-root-check" ]; then
-    check_root
-fi
+# if [ "$1" != "--no-root-check" ]; then
+#     check_root
+# fi
 
 # Main loop
 while true; do
