@@ -20,11 +20,11 @@ NGINX_ENABLED_DIR="/etc/nginx/sites-enabled"
 HOSTS_FILE="/etc/hosts"
 
 # Vérifier si l'utilisateur a les privilèges sudo
-if [[ $EUID -ne 0 ]]; then
-   echo -e "${RED}[ERREUR]${NC} Ce script nécessite des privilèges administrateur"
-   echo -e "Utilisation: ${YELLOW}sudo $0${NC}"
-   exit 1
-fi
+# if [[ $EUID -ne 0 ]]; then
+#    echo -e "${RED}[ERREUR]${NC} Ce script nécessite des privilèges administrateur"
+#    echo -e "Utilisation: ${YELLOW}sudo $0${NC}"
+#    exit 1
+# fi
 
 # Fonction pour afficher un message de bienvenue
 function print_welcome() {
