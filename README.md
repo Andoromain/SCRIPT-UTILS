@@ -8,6 +8,30 @@ Ce dépôt contient des scripts professionnels conçus pour améliorer la produc
 
 ## Installation
 
+### Étape 1 : Obtenir les scripts
+```bash
+# Clonez ce dépôt
+git clone https://github.com/yourusername/script-utils.git
+
+# Accédez au dossier des scripts
+cd script-utils
+```
+
+### Étape 2 : Configurer les scripts
+```bash
+# Rendez les scripts exécutables
+chmod +x *.sh
+
+# Exécutez le script d'installation pour configurer les alias
+./install.sh
+```
+
+### Étape 3 : Activer les alias
+```bash
+# Rechargez votre profil bash pour activer les alias
+source ~/.bashrc
+```
+
 Une fois l'installation terminée, vous pourrez utiliser les alias suivants :
 
 | Alias | Description |
