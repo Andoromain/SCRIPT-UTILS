@@ -1,98 +1,117 @@
 # SCRIPT-UTILS
 
-A comprehensive collection of utility scripts for automating NGINX virtual host management and streamlining project setup workflows.
+Une collection complète de scripts utilitaires pour automatiser la gestion des hôtes virtuels NGINX/Apache et simplifier les workflows de configuration de projets.
 
-## Overview
+## Présentation
 
-This repository contains professional-grade scripts designed to enhance developer productivity by automating the creation and management of NGINX virtual hosts. These utilities support rapid environment setup for various project types including Laravel, React, and Vue applications.
-
-## Key Scripts
-
-| Script | Description | Usage |
-|--------|-------------|-------|
-| `createNewProjet.sh` | Creates a new project with complete NGINX virtual host configuration | `sudo ./createNewProjet.sh [projectName] [projectUrl] [projectDirectory] [projectType] [phpVersion] [environment] [port]` |
-| `deleteProject.sh` | Removes NGINX virtual host configurations and related entries | `sudo ./deleteProject.sh` |
-
-## Detailed Documentation
-
-### `createNewProjet.sh`
-
-This script automates the complete workflow for setting up new development projects with appropriate NGINX configurations.
-
-#### Features:
-
-- Creates optimized NGINX virtual host configurations for Laravel, React, or Vue projects
-- Automatically manages local DNS entries in the hosts file
-- Configures environment-specific settings (development/production)
-- Implements user preference persistence for streamlined workflow
-- Provides detailed logging and robust error handling
-
-#### Parameters:
-
-- `projectName`: Name of the project
-- `projectUrl`: Domain for the virtual host (without http://)
-- `projectDirectory`: Target directory for project creation
-- `projectType`: Project framework (1=Laravel, 2=React, 3=Vue)
-- `phpVersion`: PHP version for Laravel projects (e.g., 8.2)
-- `environment`: Deployment environment (dev/prod)
-- `port`: Port number for development React/Vue projects
-
-### `deleteProject.sh`
-
-This utility manages the clean removal of NGINX virtual host configurations and related system entries.
-
-#### Features:
-
-- Displays interactive list of available NGINX configurations
-- Removes configuration files from appropriate NGINX directories
-- Cleans up corresponding DNS entries from hosts file
-- Automatically reloads NGINX service after changes
-- Provides confirmation prompts to prevent accidental deletions
-
-## System Requirements
-
-- Bash shell environment
-- NGINX web server
-- Sudo privileges for system file modifications
-- PHP (for Laravel projects)
-- Node.js and npm (for React/Vue projects)
+Ce dépôt contient des scripts professionnels conçus pour améliorer la productivité des développeurs en automatisant la création et la gestion d'hôtes virtuels NGINX et Apache. Ces utilitaires permettent une mise en place rapide d'environnements pour différents types de projets, notamment Laravel, React et Vue.
 
 ## Installation
 
-```bash
-# Clone this repository
-git clone https://github.com/yourusername/script-utils.git
+Une fois l'installation terminée, vous pourrez utiliser les alias suivants :
 
-# Make the scripts executable
-chmod +x script-utils/*.sh
+| Alias | Description |
+|-------|-------------|
+| `laravel-new` | Crée un nouveau projet Laravel |
+| `nginx-new` | Crée un hôte virtuel Nginx |
+| `nginx-delete` | Supprime un hôte virtuel Nginx |
+| `apache-new` | Crée un hôte virtuel Apache |
+| `apache-delete` | Supprime un hôte virtuel Apache |
+| `adminsys` | Lance l'outil d'administration système |
 
-# Run scripts with sudo privileges
-cd script-utils
-sudo ./createNewProjet.sh
-```
+## Scripts disponibles
+
+### `install.sh`
+
+Ce script installe tous les alias dans votre fichier `~/.bashrc` pour faciliter l'utilisation des autres scripts.
+
+**Fonctionnalités :**
+- Vérifie que tous les scripts requis sont présents
+- Rend les scripts exécutables
+- Ajoute ou met à jour les alias dans le fichier `~/.bashrc`
+- Affiche un résumé des alias installés
+
+### `createLaravelProject.sh` (alias: `laravel-new`)
+
+Ce script automatise la création d'un nouveau projet Laravel avec différentes options.
+
+**Fonctionnalités :**
+- Création d'un projet Laravel (version spécifique ou dernière version)
+- Installation optionnelle de kits de démarrage (Breeze ou Jetstream)
+- Configuration de différentes stacks (Blade, Livewire, Vue, React)
+- Support optionnel des équipes avec Jetstream
+
+### `createNewVhostNginx.sh` (alias: `nginx-new`)
+
+Ce script crée un hôte virtuel Nginx pour différents types de projets.
+
+**Fonctionnalités :**
+- Création de configurations Nginx optimisées pour Laravel, React ou Vue
+- Gestion automatique des entrées DNS locales dans le fichier hosts
+- Configuration spécifique à l'environnement (développement/production)
+- Mémorisation des préférences utilisateur
+
+### `deleteVhostNginx.sh` (alias: `nginx-delete`)
+
+Ce script permet de supprimer un hôte virtuel Nginx et les entrées associées.
+
+**Fonctionnalités :**
+- Affichage interactif des configurations Nginx disponibles
+- Suppression des fichiers de configuration des répertoires Nginx appropriés
+- Nettoyage des entrées DNS correspondantes du fichier hosts
+- Rechargement automatique du service Nginx après les modifications
+
+### `createNewVhostApache.sh` (alias: `apache-new`)
+
+Ce script crée un hôte virtuel Apache pour différents types de projets.
+
+**Fonctionnalités :**
+- Création de configurations Apache optimisées pour Laravel, React ou Vue
+- Gestion automatique des entrées DNS locales dans le fichier hosts
+- Configuration spécifique à l'environnement (développement/production)
+- Mémorisation des préférences utilisateur
+
+### `deleteVhostApache.sh` (alias: `apache-delete`)
+
+Ce script permet de supprimer un hôte virtuel Apache et les entrées associées.
+
+**Fonctionnalités :**
+- Affichage interactif des configurations Apache disponibles
+- Suppression des fichiers de configuration des répertoires Apache appropriés
+- Nettoyage des entrées DNS correspondantes du fichier hosts
+- Rechargement automatique du service Apache après les modifications
+
+### `adminsys.sh` (alias: `adminsys`)
+
+Cet outil d'administration système offre plusieurs fonctionnalités pour gérer votre serveur.
+
+**Fonctionnalités :**
+- Affichage des informations système
+- Gestion des utilisateurs (création, suppression, modification)
+- Gestion du réseau (interfaces, configuration IP, test de connectivité)
+- Gestion des services (démarrage, arrêt, redémarrage)
+- Consultation des journaux système
+- Création de sauvegardes
+- Vérifications de sécurité
+
+## Prérequis système
+
+- Environnement shell Bash
+- Serveur web NGINX et/ou Apache
+- Privilèges sudo pour les modifications de fichiers système
+- PHP (pour les projets Laravel)
+- Node.js et npm (pour les projets React/Vue)
 
 ## Configuration
 
-The `createNewProjet.sh` script maintains user preferences in `~/.config/project-creator.conf`, enhancing efficiency for repeated project creation tasks.
+Le script `createNewVhostNginx.sh` et `createNewVhostApache.sh` conservent les préférences utilisateur dans `~/.config/project-creator.conf`, améliorant l'efficacité pour les tâches de création de projets répétitives.
 
-## Security Considerations
+## Considérations de sécurité
 
-- Scripts require sudo privileges for modifying system files and NGINX configurations
-- Always review generated configurations before deploying to production environments
-- Implement appropriate file permissions on created directories and configuration files
+- Les scripts nécessitent des privilèges sudo pour modifier les fichiers système et les configurations
+- Vérifiez toujours les configurations générées avant de les déployer dans des environnements de production
+- Implémentez des permissions de fichiers appropriées sur les répertoires et fichiers de configuration créés
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-Released under the MIT License. See the LICENSE file for details.
-
-## Author
+## Auteur
 
 Ando Romain
