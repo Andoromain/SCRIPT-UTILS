@@ -11,7 +11,7 @@ Ce dépôt contient des scripts professionnels conçus pour améliorer la produc
 ### Étape 1 : Obtenir les scripts
 ```bash
 # Clonez ce dépôt
-git clone https://github.com/yourusername/script-utils.git
+git clone git@github.com:Andoromain/SCRIPT-UTILS.git
 
 # Accédez au dossier des scripts
 cd script-utils
