@@ -314,7 +314,7 @@ create_virtual_host_nginx() {
 server {
     listen 80;
     server_name $projectUrl;
-    root /var/www/$projectName/public;
+    root $projectDirectory/public;
     
     index index.php index.html index.htm;
     
