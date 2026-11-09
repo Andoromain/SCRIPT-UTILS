@@ -1,0 +1,6 @@
+[Unit]
+Description=Surveillance espace disque (SCRIPT-UTILS)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/diskwatch 85

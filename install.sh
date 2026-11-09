@@ -1,93 +1,95 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 # =============================================================================
 # Nom du script : install.sh
-# Description   : Installation des alias pour les scripts d'administration système
+# Description   : Installe les commandes de SCRIPT-UTILS dans /usr/local/bin
+#                 (liens symboliques), les alias shell et les timers systemd.
+#                 Relançable sans risque après chaque ajout de script.
 # Auteur        : Ando Romain
-# Version       : 1.0
+# Version       : 2.0
 # =============================================================================
+set -euo pipefail
 
-# Couleurs pour l'affichage terminal
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Obtenir le chemin absolu du répertoire courant
-SCRIPT_DIR=$(pwd)
+# Dossier du dépôt, quel que soit l'endroit d'où on lance le script
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BIN_DIR="/usr/local/bin"
+
+# -----------------------------------------------------------------------------
+# Commandes installées : "nom-de-commande:chemin/relatif/au/depot"
+# Pour ajouter un script : le mettre dans scripts/<categorie>/ puis ajouter
+# une ligne ici, et relancer ./install.sh
+# -----------------------------------------------------------------------------
+COMMANDS=(
+  "laravel-new:scripts/laravel/createLaravelProject.sh"
+  "nginx-new:scripts/web/createNewVhostNginx.sh"
+  "nginx-delete:scripts/web/deleteVhostNginx.sh"
+  "apache-new:scripts/web/createNewVhostApache.sh"
+  "apache-delete:scripts/web/deleteVhostApache.sh"
+  "adminsys:scripts/system/adminsys.sh"
+  "diskwatch:scripts/system/diskwatch.sh"
+)
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║          INSTALLATION DES SCRIPTS          ║${NC}"
-echo -e "${BLUE}╚════════════════════════════════════════════╝${NC}"
-echo -e "\n"
+echo -e "${BLUE}║          INSTALLATION SCRIPT-UTILS         ║${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════════╝${NC}\n"
 
-# Vérifier si les scripts requis existent
-required_scripts=(
-  "createLaravelProject.sh"
-  "createNewVhostNginx.sh"
-  "deleteVhostNginx.sh"
-  "createNewVhostApache.sh"
-  "deleteVhostApache.sh"
-  "adminsys.sh"
-)
+# 1. Liens symboliques dans /usr/local/bin ------------------------------------
+echo -e "${BLUE}[1/4]${NC} Commandes dans $BIN_DIR (sudo requis)"
+for entry in "${COMMANDS[@]}"; do
+  name="${entry%%:*}"
+  target="$REPO/${entry#*:}"
+  if [ ! -f "$target" ]; then
+    echo -e "  ${RED}[ERREUR]${NC} $target introuvable, ignoré"
+    continue
+  fi
+  chmod +x "$target"
+  sudo ln -sfn "$target" "$BIN_DIR/$name"
+  echo -e "  ${GREEN}✓${NC} $name -> ${entry#*:}"
+done
 
-missing_scripts=0
-for script in "${required_scripts[@]}"; do
-  if [ ! -f "$SCRIPT_DIR/$script" ]; then
-    echo -e "${RED}[ERREUR]${NC} Script requis '$script' non trouvé dans $SCRIPT_DIR"
-    missing_scripts=1
+# 2. Suppression des anciens alias (version 1.0 de install.sh) -----------------
+# Ils pointaient vers les anciens chemins à la racine du dépôt et
+# masqueraient les nouvelles commandes.
+echo -e "\n${BLUE}[2/4]${NC} Nettoyage des anciens alias dans ~/.bashrc"
+touch ~/.bashrc
+for entry in "${COMMANDS[@]}"; do
+  name="${entry%%:*}"
+  if grep -q "^alias $name=" ~/.bashrc; then
+    sed -i "/^alias $name=/d" ~/.bashrc
+    echo -e "  ${YELLOW}-${NC} alias $name supprimé"
   fi
 done
 
-if [ $missing_scripts -eq 1 ]; then
-  echo -e "${RED}[ERREUR]${NC} Installation annulée. Veuillez vous assurer que tous les scripts requis existent."
-  exit 1
+# 3. Alias personnels -----------------------------------------------------------
+echo -e "\n${BLUE}[3/4]${NC} Chargement de shell/aliases.sh"
+LINE="[ -f \"$REPO/shell/aliases.sh\" ] && source \"$REPO/shell/aliases.sh\"  # SCRIPT-UTILS"
+if ! grep -qF "# SCRIPT-UTILS" ~/.bashrc; then
+  echo "$LINE" >> ~/.bashrc
+  echo -e "  ${GREEN}✓${NC} ligne ajoutée à ~/.bashrc"
+else
+  sed -i "\|# SCRIPT-UTILS\$|c\\$LINE" ~/.bashrc
+  echo -e "  ${GREEN}✓${NC} déjà présent (chemin mis à jour)"
 fi
 
-# Rendre tous les scripts exécutables
-echo -e "${YELLOW}[INFO]${NC} Rendre les scripts exécutables (nécessite des droits administrateur)..."
-sudo chmod +x "$SCRIPT_DIR"/*.sh
-echo -e "${GREEN}[SUCCÈS]${NC} Les scripts sont maintenant exécutables"
+# 4. Units systemd utilisateur ------------------------------------------------
+echo -e "\n${BLUE}[4/4]${NC} Timers systemd utilisateur"
+if command -v systemctl >/dev/null && systemctl --user show-environment >/dev/null 2>&1; then
+  mkdir -p ~/.config/systemd/user
+  for unit in "$REPO"/systemd/*; do
+    [ -f "$unit" ] || continue
+    ln -sfn "$unit" ~/.config/systemd/user/"$(basename "$unit")"
+    echo -e "  ${GREEN}✓${NC} $(basename "$unit")"
+  done
+  systemctl --user daemon-reload
+  echo -e "  Pour activer : ${YELLOW}systemctl --user enable --now diskwatch.timer${NC}"
+else
+  echo -e "  ${YELLOW}[INFO]${NC} systemd utilisateur indisponible, étape ignorée"
+fi
 
-# Définir les alias à ajouter
-declare -A aliases=(
-  ["laravel-new"]="$SCRIPT_DIR/createLaravelProject.sh"
-  ["nginx-new"]="$SCRIPT_DIR/createNewVhostNginx.sh"
-  ["nginx-delete"]="$SCRIPT_DIR/deleteVhostNginx.sh"
-  ["apache-new"]="$SCRIPT_DIR/createNewVhostApache.sh"
-  ["apache-delete"]="$SCRIPT_DIR/deleteVhostApache.sh"
-  ["adminsys"]="$SCRIPT_DIR/adminsys.sh"
-)
-
-# Fonction pour ajouter un alias s'il n'existe pas déjà
-add_alias_if_not_exists() {
-  local alias_name=$1
-  local script_path=$2
-  
-  if grep -q "alias $alias_name=" ~/.bashrc; then
-    echo -e "${YELLOW}[INFO]${NC} Alias '$alias_name' existe déjà dans ~/.bashrc. Mise à jour..."
-    # Supprimer l'alias existant
-    sed -i "/alias $alias_name=/d" ~/.bashrc
-  fi
-  
-  echo "alias $alias_name=\"$script_path\"" >> ~/.bashrc
-  echo -e "${GREEN}[SUCCÈS]${NC} Ajout de l'alias: $alias_name -> $script_path"
-}
-
-# Ajouter les alias à .bashrc
-echo -e "\n${BLUE}[TRAITEMENT]${NC} Ajout des alias à ~/.bashrc..."
-for alias_name in "${!aliases[@]}"; do
-  add_alias_if_not_exists "$alias_name" "${aliases[$alias_name]}"
-done
-
-echo -e "\n${GREEN}=== Installation terminée avec succès ! ===${NC}"
-echo -e "Les alias suivants sont maintenant disponibles:"
-
-for alias_name in "${!aliases[@]}"; do
-  echo -e "  ${YELLOW}$alias_name${NC}"
-done
-
-echo -e "\n${BLUE}[ACTION]${NC} Chargement des alias dans la session courante..."
-source ~/.bashrc
-echo -e "${GREEN}[SUCCÈS]${NC} Les alias sont maintenant prêts à être utilisés !"
+echo -e "\n${GREEN}=== Installation terminée ===${NC}"
+echo -e "Recharge ton shell : ${YELLOW}source ~/.bashrc${NC}"
