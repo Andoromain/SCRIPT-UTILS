@@ -19,6 +19,8 @@ SCRIPT-UTILS/
 │   └── aliases.sh  # alias et petites fonctions bash
 ├── docs/
 │   └── aide-memoire.md  # commandes ponctuelles à copier-coller
+├── tools/check.sh  # vérification du dépôt
+├── AGENTS.md       # règles pour les assistants IA
 └── install.sh
 ```
 
@@ -54,6 +56,13 @@ On peut le relancer autant de fois que nécessaire.
    `install.sh`, puis relancer `./install.sh`.
 2. **Raccourci** : l'ajouter dans `shell/aliases.sh` (actif au prochain `source ~/.bashrc`).
 3. **Commande à retenir** : la noter dans `docs/aide-memoire.md`.
+
+### Avec un assistant IA
+
+Les règles du dépôt sont dans `AGENTS.md` (lu par Codex, Cursor… et par Claude Code via `CLAUDE.md`).
+Il suffit de demander, depuis le dépôt : *« ajoute un script qui nettoie les logs de plus de 7 jours »*.
+L'agent part de `scripts/_template.sh`, déclare la commande dans `install.sh`, met à jour ce README
+et valide avec `./tools/check.sh`.
 
 Ne jamais committer de mot de passe, token ou IP de serveur : utiliser un `.env` (ignoré par git).
 
