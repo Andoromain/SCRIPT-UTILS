@@ -6,54 +6,58 @@ Une collection complète de scripts utilitaires pour automatiser la gestion des 
 
 Ce dépôt contient des scripts professionnels conçus pour améliorer la productivité des développeurs en automatisant la création et la gestion d'hôtes virtuels NGINX et Apache. Ces utilitaires permettent une mise en place rapide d'environnements pour différents types de projets, notamment Laravel, React et Vue.
 
+## Structure
+
+```
+SCRIPT-UTILS/
+├── scripts/
+│   ├── web/        # vhosts Nginx / Apache (création, suppression)
+│   ├── laravel/    # création de projets Laravel
+│   └── system/     # administration système, surveillance disque
+├── systemd/        # services et timers utilisateur (ex. diskwatch)
+├── shell/
+│   └── aliases.sh  # alias et petites fonctions bash
+├── docs/
+│   └── aide-memoire.md  # commandes ponctuelles à copier-coller
+└── install.sh
+```
+
 ## Installation
 
-### Étape 1 : Obtenir les scripts
 ```bash
-# Clonez ce dépôt
 git clone git@github.com:Andoromain/SCRIPT-UTILS.git
-
-# Accédez au dossier des scripts
-cd script-utils
-```
-
-### Étape 2 : Configurer les scripts
-```bash
-# Rendez les scripts exécutables
-chmod +x *.sh
-
-# Exécutez le script d'installation pour configurer les alias
+cd SCRIPT-UTILS
 ./install.sh
-```
-
-### Étape 3 : Activer les alias
-```bash
-# Rechargez votre profil bash pour activer les alias
 source ~/.bashrc
 ```
 
-Une fois l'installation terminée, vous pourrez utiliser les alias suivants :
+`install.sh` crée des liens symboliques dans `/usr/local/bin`. Les commandes sont donc
+disponibles partout, y compris avec `sudo` (`sudo apache-delete`, `sudo adminsys`), et
+toute modification d'un script dans le dépôt est prise en compte immédiatement.
+Il supprime aussi les anciens alias de la v1 dans `~/.bashrc` et charge `shell/aliases.sh`.
+On peut le relancer autant de fois que nécessaire.
 
-| Alias | Description |
-|-------|-------------|
-| `laravel-new` | Crée un nouveau projet Laravel |
-| `nginx-new` | Crée un hôte virtuel Nginx |
-| `nginx-delete` | Supprime un hôte virtuel Nginx |
-| `apache-new` | Crée un hôte virtuel Apache |
-| `apache-delete` | Supprime un hôte virtuel Apache |
-| `adminsys` | Lance l'outil d'administration système |
+| Commande | Script | Description |
+|----------|--------|-------------|
+| `laravel-new` | `scripts/laravel/createLaravelProject.sh` | Crée un nouveau projet Laravel |
+| `nginx-new` | `scripts/web/createNewVhostNginx.sh` | Crée un hôte virtuel Nginx |
+| `nginx-delete` | `scripts/web/deleteVhostNginx.sh` | Supprime un hôte virtuel Nginx |
+| `apache-new` | `scripts/web/createNewVhostApache.sh` | Crée un hôte virtuel Apache |
+| `apache-delete` | `scripts/web/deleteVhostApache.sh` | Supprime un hôte virtuel Apache (sudo) |
+| `adminsys` | `scripts/system/adminsys.sh` | Outil d'administration système (sudo) |
+| `diskwatch` | `scripts/system/diskwatch.sh` | Alerte si une partition dépasse un seuil |
+
+## Ajouter une commande
+
+1. **Script complet** : le placer dans `scripts/<catégorie>/`, ajouter une ligne
+   `"nom-commande:scripts/<catégorie>/fichier.sh"` dans le tableau `COMMANDS` de
+   `install.sh`, puis relancer `./install.sh`.
+2. **Raccourci** : l'ajouter dans `shell/aliases.sh` (actif au prochain `source ~/.bashrc`).
+3. **Commande à retenir** : la noter dans `docs/aide-memoire.md`.
+
+Ne jamais committer de mot de passe, token ou IP de serveur : utiliser un `.env` (ignoré par git).
 
 ## Scripts disponibles
-
-### `install.sh`
-
-Ce script installe tous les alias dans votre fichier `~/.bashrc` pour faciliter l'utilisation des autres scripts.
-
-**Fonctionnalités :**
-- Vérifie que tous les scripts requis sont présents
-- Rend les scripts exécutables
-- Ajoute ou met à jour les alias dans le fichier `~/.bashrc`
-- Affiche un résumé des alias installés
 
 ### `createLaravelProject.sh` (alias: `laravel-new`)
 
@@ -117,6 +121,16 @@ Cet outil d'administration système offre plusieurs fonctionnalités pour gérer
 - Consultation des journaux système
 - Création de sauvegardes
 - Vérifications de sécurité
+
+### `diskwatch.sh` (commande : `diskwatch`)
+
+Surveille l'espace disque et alerte au-delà d'un seuil (80 % par défaut).
+
+**Fonctionnalités :**
+- `diskwatch 90` pour un seuil à 90 %
+- Ignore les systèmes de fichiers virtuels (tmpfs, snap/squashfs, overlay…)
+- Notification de bureau via `notify-send` (paquet `libnotify-bin`)
+- Exécution automatique toutes les 30 min : `systemctl --user enable --now diskwatch.timer`
 
 ## Prérequis système
 
